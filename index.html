@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .container {
+            margin: 0 auto;
+            width: 900px;
+            margin-top: 50px;
+            display: flex;
+        }
+
+        .btn {
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            padding: .8em 1em calc(.8em + 3px);
+            border-radius: 3px;
+            background: rgb(64, 199, 129);
+            box-shadow: 0 -3px rgb(53, 167, 110) inset;
+            transition: 0.2s;
+            margin-left: 20px;
+            margin-right: 20px;
+            font-size: 15px;
+        }
+
+        .btn:hover {
+            background: rgb(53, 167, 110);
+        }
+
+        .btn:active {
+            background: rgb(33, 147, 90);
+            box-shadow: 0 3px rgb(33, 147, 90) inset;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <select class="listOfHeroes">
+        <option>Select hero:</option>
+    </select>
+    <button class="btn">Get info</button>
+    <select class='getFilms'>
+        <option>Films:</option>
+    </select>
+</div>
+
+<script>
+    const url = 'https://swapi.co/api/people/';
+    const $selectHeroes = document.querySelector('.listOfHeroes');
+    const btn = document.querySelector('.btn');
+    let arrayHeroes = [];
+
+    const getHeroes = async url => {
+        let response = await fetch(url);
+        let people = await response.json();
+        let allHeroes = people.results;
+        // arrayHeroes.splice(0, arrayHeroes.length);
+        allHeroes.forEach(item => {
+            let arrFilms = {};
+            if (item.name) {
+                const hero = document.createElement('option');
+                hero.innerText = item.name;
+                $selectHeroes.append(hero);
+            }
+            if (item.films) {
+                arrFilms = {
+                    selectedNameHero: item.name,
+                    films: []
+                };
+                item.films.forEach(item => {
+                    async function getFilms() {
+                        let response = await fetch(item);
+                        let allFilms = await response.json();
+                        let titleFilm = await allFilms.title;
+                        arrFilms.films.push(titleFilm);
+                    }
+                    getFilms(item).then(console.log)
+                });
+                arrayHeroes.push(arrFilms);
+            }
+        })
+    };
+
+    function clear() {
+        let sel = document.querySelector('.getFilms');
+        let opt = sel.querySelectorAll('.films');
+        opt.forEach(item => {
+            item.remove();
+        })
+    }
+
+    function showMatch() {
+        clear();
+        let selectElem = document.querySelector('.listOfHeroes');
+        let index = selectElem.options.selectedIndex;
+        let selectOption = selectElem.options[index].value;
+        arrayHeroes.forEach(item => {
+            if (item.selectedNameHero === selectOption) {
+                let selectFilms = document.querySelector('.getFilms');
+                item.films.forEach(item => {
+                    const optionFilms = document.createElement('option');
+                    optionFilms.classList.add('films');
+                    optionFilms.innerText = item;
+                    selectFilms.append(optionFilms);
+                })
+            }
+        })
+    }
+
+    getHeroes(url).then(console.log);
+    btn.addEventListener('click', showMatch);
+</script>
+</body>
+</html>
